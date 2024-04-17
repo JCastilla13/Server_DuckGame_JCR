@@ -6,22 +6,28 @@ public class Database_Manager
 
     public Database_Manager()
     {
+        //Chorizo grande para conectarnos con la base de datos
         string connectionString = "Server=127.0.0.1;Port=3306;database=godduckgame_jcr;Uid=root;password=;SSL Mode=None;connect timeout=3600;default command timeout=3600;";
+        //Establecemos conexion con la base de datos
         connection = new MySqlConnection(connectionString);
 
         try
         {
+            //Intenamos conectarnos con la base de datos
             connection.Open();
             Console.WriteLine("Conexión a la base de datos establecida correctamente.");
         }
         catch (Exception ex)
         {
+            //Si no podemos conectarnos con la base de datos saltara este error
             Console.WriteLine("Error al conectar con la base de datos: " + ex.Message);
         }
     }
 
+    //Registramos nuevo usuario en la base de datos
     public bool Register(string nick, string password, string race)
     {
+        //Comprobamos si el usuario ya existe en la base de datos
         string checkCommandString = "SELECT * FROM Users WHERE nick = @nick";
         MySqlCommand checkCommand = new MySqlCommand(checkCommandString, connection);
         checkCommand.Parameters.AddWithValue("@nick", nick);
@@ -35,6 +41,7 @@ public class Database_Manager
             return false;
         }
 
+        //Insertamos nuevo usuario en la base de datos
         string commandString = "INSERT INTO Users (nick, password, race) VALUES (@nick, @password, @race)";
         MySqlCommand command = new MySqlCommand(commandString, connection);
         command.Parameters.AddWithValue("@nick", nick);
@@ -42,19 +49,23 @@ public class Database_Manager
         command.Parameters.AddWithValue("@race", race);
         try
         {
+            //Ejecutamos comando de insercion de usuario en la base de datos
             command.ExecuteNonQuery();
             Console.WriteLine("Inserción exitosa.");
             return true;
         }
         catch (Exception ex)
         {
+            //Si el comando falla salta error
             Console.WriteLine("Error al ejecutar comando: " + ex.Message);
             return false;
         }
     }
 
+    //Iniciamos sesion de un usuario dentro de la base de datos
     public string Login(string nick, string password)
     {
+        //Verificamos si el login es correcto mediante una query de SELECT
         string commandString = "SELECT * FROM Users WHERE nick = @nick AND password = @password";
         MySqlCommand command = new MySqlCommand(commandString, connection);
         command.Parameters.AddWithValue("@nick", nick);

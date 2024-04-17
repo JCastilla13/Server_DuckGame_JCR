@@ -35,6 +35,7 @@ public class Network_Manager
         this.disconnectClients = new List<Client>();
     }
 
+    //Revisamoe si la conexion de los clientes se hace
     public void CheckConnection()
     {
         if (Environment.TickCount - this.lastTimePing > 10000)
@@ -56,6 +57,7 @@ public class Network_Manager
         }
     }
 
+    //Iniciamos el servicio de red
     public void Start_Network_Service()
     {
         try
@@ -74,6 +76,7 @@ public class Network_Manager
 
     }
 
+    //Escuchamos las nuevas coneciones
     private void StartListening()
     {
         //Escucho
@@ -83,6 +86,7 @@ public class Network_Manager
         this.serverListener.BeginAcceptTcpClient(AcceptConnection, this.serverListener);
     }
 
+    //Aceptamos nuevas conexiones
     private void AcceptConnection(IAsyncResult ar)
     {
         Console.WriteLine("Recibo una conexion");
@@ -96,6 +100,7 @@ public class Network_Manager
         StartListening();
     }
 
+    //Enviamos pint a un cliente
     private void SendPing(Client client)
     {
         try
@@ -108,6 +113,7 @@ public class Network_Manager
         catch (Exception ex) { Console.WriteLine("Error al enviar ping al usuario"); }
     }
 
+    //Registramos nuevo usuario
     public void Register(string nick, string password, string race, StreamWriter writer)
     {
         bool registerSuccess = dbManager.Register(nick, password, race);
@@ -124,6 +130,7 @@ public class Network_Manager
         }
     }
 
+    //Iniciamos sesion
     public void Login(string nick, string password, StreamWriter writer)
     {
         string loginResult = dbManager.Login(nick, password);
@@ -141,7 +148,7 @@ public class Network_Manager
         }
     }
 
-
+    //Desconectamos clientes
     public void DisconnectClients()
     {
         clientListMutex.WaitOne();
@@ -155,22 +162,26 @@ public class Network_Manager
         clientListMutex.ReleaseMutex();
     }
 
+    //Manejar los datos recibidos de los clientes
     private void ManageData(Client client, string data)
     {
+        //Se dividen los datos en parametros
         string[] parameters = data.Split('/');
 
         switch (parameters[0])
         {
+            //Si la accion que se hace es LOGIN entonces llamamos a la funcion de login
             case "LOGIN":
                 Login(parameters[1], parameters[2], new StreamWriter(client.GetTcpClient().GetStream()));
                 break;
+            //Si la accion que se hace es REGISTER entonces llamamos a la funcion de register
             case "REGISTER":
                 Register(parameters[1], parameters[2], parameters[3], new StreamWriter(client.GetTcpClient().GetStream()));
                 break;
         }
     }
 
-
+    //Revisamos los mensajes recibidos por parte de los clientes
     public void CheckMessage()
     {
         clientListMutex.WaitOne();
